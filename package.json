@@ -1,0 +1,12 @@
+{
+  "name": "deluge2influx",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "start": "node deluge2influx.js"
+  },
+  "devDependencies": {
+    "influx": "^4.2.2",
+    "request": "^2.75.0"
+  }
+}
