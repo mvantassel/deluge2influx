@@ -7,6 +7,7 @@
   },
   "devDependencies": {
     "influx": "^4.2.2",
-    "request": "^2.75.0"
+    "request": "^2.75.0",
+    "request-promise": "^4.1.1"
   }
 }
