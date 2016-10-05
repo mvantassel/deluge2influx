@@ -124,18 +124,26 @@ function onGetDelugeTorrents(response) {
 
 }
 
-function restart() {
+function restart(err) {
+    if (err) {
+        console.log(err);
+    }
+
     // Every {checkInterval} seconds
     setTimeout(getAllTheMetrics, checkInterval);
 }
 
 function getAllTheMetrics() {
     if (!authCookie) {
-        authDeluge().then(onAuthDeluge)
-            .then(getDelugeTorrents).then(onGetDelugeTorrents)
+        authDeluge()
+            .then(onAuthDeluge)
+            .catch(restart)
+            .then(getDelugeTorrents)
+            .then(onGetDelugeTorrents)
             .finally(restart);
     } else {
-        getDelugeTorrents().then(onGetDelugeTorrents)
+        getDelugeTorrents()
+            .then(onGetDelugeTorrents)
             .finally(restart);
     }
 }
