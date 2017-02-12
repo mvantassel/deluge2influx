@@ -55,8 +55,13 @@ function getDelugeTorrents() {
     }));
 }
 
-function writeToInflux(seriesName, values, tags, callback) {
-    return influxClient.writePoint(seriesName, values, tags, callback);
+function writeToInflux(seriesName, values, tags) {
+    return influxClient.writeMeasurement(seriesName, [
+        {
+            fields: values,
+            tags: tags
+        }
+    ]);
 }
 
 function onAuthDeluge(response) {
@@ -101,7 +106,7 @@ function onGetDelugeTorrents(response) {
             tracker: torrent.tracker_host
         };
 
-        writeToInflux('torrent', value, tags, function() {
+        writeToInflux('torrent', value, tags).then(function() {
             console.dir(`wrote ${torrents[torrentKey].name} torrent data to influx: ${new Date()}`);
         });
     });
@@ -117,7 +122,7 @@ function onGetDelugeTorrents(response) {
             state: state
         };
 
-        writeToInflux('torrents', value, tags, function() {
+        writeToInflux('torrents', value, tags).then(function() {
             console.dir(`wrote ${tags.state} torrent data to influx: ${new Date()}`);
         });
     });
