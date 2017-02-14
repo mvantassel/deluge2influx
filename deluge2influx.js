@@ -2,6 +2,7 @@
 
 const Influx = require('influx');
 const request = require('request-promise');
+const chalk = require('chalk');
 
 const checkInterval = process.env.UPDATE_INTERVAL_MS || 1000 * 30;
 
@@ -28,6 +29,11 @@ let delugeRequestObj = {
     gzip: true,
     resolveWithFullResponse: true
 };
+
+function log(message, color) {
+    color = color || 'black';
+    console.log(chalk[color](message));
+}
 
 function authDeluge() {
     return request(Object.assign(delugeRequestObj, {
@@ -107,7 +113,7 @@ function onGetDelugeTorrents(response) {
         };
 
         writeToInflux('torrent', value, tags).then(function() {
-            console.dir(`wrote ${torrents[torrentKey].name} torrent data to influx: ${new Date()}`);
+            log(`wrote ${torrents[torrentKey].name} torrent data to influx: ${new Date()}`, 'blue');
         });
     });
 
@@ -123,34 +129,30 @@ function onGetDelugeTorrents(response) {
         };
 
         writeToInflux('torrents', value, tags).then(function() {
-            console.dir(`wrote ${tags.state} torrent data to influx: ${new Date()}`);
+            log(`wrote ${tags.state} torrent data to influx: ${new Date()}`, 'blue');
         });
     });
 
 }
 
-function restart(err) {
-    if (err) {
-        console.log(err);
-    }
+function restart() {
+    log(`${new Date()}: fetching deluge metrics`, 'green');
 
     // Every {checkInterval} seconds
     setTimeout(getAllTheMetrics, checkInterval);
 }
 
 function getAllTheMetrics() {
+    let getTorrentData = getDelugeTorrents().then(onGetDelugeTorrents);
+    let auth = Promise.resolve();
+
     if (!authCookie) {
-        authDeluge()
-            .then(onAuthDeluge)
-            .catch(restart)
-            .then(getDelugeTorrents)
-            .then(onGetDelugeTorrents)
-            .finally(restart);
-    } else {
-        getDelugeTorrents()
-            .then(onGetDelugeTorrents)
-            .finally(restart);
+        auth = authDeluge().then(onAuthDeluge);
     }
+
+    Promise.all([auth, getTorrentData]).then(restart, reason => {
+        log(`${new Date()}: ${reason}`, 'red');
+    });
 }
 
 // Refresh the cookie every hour so it doesn't expire
