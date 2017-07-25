@@ -78,6 +78,11 @@ function onGetDelugeTorrents(response) {
             downloaded: 0,
             uploaded: 0
         },
+        'Paused': {
+            count: 0,
+            downloaded: 0,
+            uploaded: 0
+        },
         'Seeding': {
             count: 0,
             downloaded: 0,
