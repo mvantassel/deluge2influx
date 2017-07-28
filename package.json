@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node deluge2influx.js"
   },
-  "devDependencies": {
+  "dependencies": {
     "influx": "~5.0",
     "request": "^2.75.0",
     "request-promise": "^4.1.1"
