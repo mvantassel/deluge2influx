@@ -2,7 +2,6 @@
 
 const Influx = require('influx');
 const request = require('request-promise');
-const chalk = require('chalk');
 
 const checkInterval = process.env.UPDATE_INTERVAL_MS || 1000 * 30;
 
@@ -30,12 +29,13 @@ let delugeRequestObj = {
     resolveWithFullResponse: true
 };
 
-function log(message, color) {
-    color = color || 'black';
-    console.log(chalk[color](message));
+function log(message) {
+    console.log(message);
 }
 
 function authDeluge() {
+    log(`${new Date()}: Acquiring Deluge Token`);
+
     return request(Object.assign(delugeRequestObj, {
         body: {
             method: 'auth.login',
@@ -46,6 +46,8 @@ function authDeluge() {
 }
 
 function getDelugeTorrents() {
+    log(`${new Date()}: Getting Torrent Data`);
+
     return request(Object.assign(delugeRequestObj, {
         headers: {
             'Cookie': authCookie
@@ -71,10 +73,14 @@ function writeToInflux(seriesName, values, tags) {
 }
 
 function onAuthDeluge(response) {
+    log(`${new Date()}: Deluge Token Saved Successfully`);
+
     authCookie = JSON.stringify(response.headers['set-cookie']).slice(2,50);
 }
 
 function onGetDelugeTorrents(response) {
+    log(`${new Date()}: Parsing Torrent Data`);
+
     let torrents = response.body.result.torrents;
     let torrentKeys = Object.keys(torrents);
 
@@ -118,7 +124,7 @@ function onGetDelugeTorrents(response) {
         };
 
         writeToInflux('torrent', value, tags).then(function() {
-            log(`wrote ${torrents[torrentKey].name} torrent data to influx: ${new Date()}`, 'blue');
+            log(`wrote ${torrents[torrentKey].name} torrent data to influx: ${new Date()}`);
         });
     });
 
@@ -134,30 +140,33 @@ function onGetDelugeTorrents(response) {
         };
 
         writeToInflux('torrents', value, tags).then(function() {
-            log(`wrote ${tags.state} torrent data to influx: ${new Date()}`, 'blue');
+            log(`wrote ${tags.state} torrent data to influx: ${new Date()}`);
         });
     });
 
 }
 
 function restart() {
-    log(`${new Date()}: fetching deluge metrics`, 'green');
-
     // Every {checkInterval} seconds
     setTimeout(getAllTheMetrics, checkInterval);
 }
 
 function getAllTheMetrics() {
-    let getTorrentData = getDelugeTorrents().then(onGetDelugeTorrents);
+    let getTorrentData = getDelugeTorrents().then(onGetDelugeTorrents).catch(handleError);
     let auth = Promise.resolve();
 
     if (!authCookie) {
-        auth = authDeluge().then(onAuthDeluge);
+        auth = authDeluge().then(onAuthDeluge).catch(handleError);
     }
 
     Promise.all([auth, getTorrentData]).then(restart, reason => {
-        log(`${new Date()}: ${reason}`, 'red');
-    });
+        log(`${new Date()}: ${reason}`);
+    }).catch(handleError);
+}
+
+function handleError(err) {
+    log(`${new Date()}: Error`);
+    log(err);
 }
 
 // Refresh the cookie every hour so it doesn't expire
@@ -165,4 +174,5 @@ setInterval(function() {
     authDeluge(onAuthDeluge);
 }, 1000 * 60 * 60);
 
+log(`${new Date()}: Initialize Deluge2Influx`);
 getAllTheMetrics();
