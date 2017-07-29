@@ -10,12 +10,12 @@ Most basic form:
 
 Variable | Description | Default value | Sample value | Required?
 -------- | ----------- | ------------- | ------------ | ---------
-INFLUXDB_PROTOCOL | Is Influx SSL? | http | https | optional
-INFLUXDB_HOST | Where is your InfluxDB running? | localhost | influxdb | recommended
-INFLUXDB_PORT | What port is InfluxDB running on? | 8086 | 999 | optional
-INFLUXDB_DB | What InfluxDB database do you want to use? | 'deluge' | 'potato' | required
-INFLUXDB_USER | InfluxDB username | | | optional
-INFLUXDB_PASS | InfluxDB password | metrics | | optional
+INFLUX_PROTOCOL | Is Influx SSL? | http | https | optional
+INFLUX_HOST | Where is your InfluxDB running? | localhost | influxdb | recommended
+INFLUX_PORT | What port is InfluxDB running on? | 8086 | 999 | optional
+INFLUX_DB | What InfluxDB database do you want to use? | 'deluge' | 'potato' | required
+INFLUX_USER | InfluxDB username | | | optional
+INFLUX_PASS | InfluxDB password | metrics | | optional
 DELUGE_PROTOCOL | Is Deluge SSL? | http | https | optional
 DELUGE_HOST | Where is your Deluge running? | localhost | deluge | recommended
 DELUGE_PORT | What port is Deluge running on? | 8112 | 999 | optional

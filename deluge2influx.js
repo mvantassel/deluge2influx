@@ -9,7 +9,9 @@ const influxClient = new Influx.InfluxDB({
     host: process.env.INFLUX_HOST || 'localhost',
     port: process.env.INFLUX_PORT || 8086,
     protocol: process.env.INFLUX_PROTOCOL || 'http',
-    database: process.env.INFLUX_DB || 'deluge'
+    database: process.env.INFLUX_DB || 'deluge',
+    username: process.env.INFLUX_USER || '',
+    password: process.env.INFLUX_PASS || ''
 });
 
 const delugeConfig = {
